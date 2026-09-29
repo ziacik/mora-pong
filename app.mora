@@ -1,0 +1,223 @@
+language mora 0.4
+
+faculty numbers from arithmetic {
+    can add Number Number -> Number
+    can clamp Number Number Number -> Number
+    can less Number Number -> Bool
+    can greater Number Number -> Bool
+}
+
+faculty motion from geometry2d {
+    can advance X Y Vx Vy -> Motion
+    can bounce-y X Y Vx Vy Radius Top Bottom -> Motion
+    can bounce-rect X Y Vx Vy Radius RectX RectY RectWidth RectHeight -> Motion
+}
+
+app MoraPong {
+    identity "com.github.ziacik.MoraPong"
+
+    remembers {
+        arenaWidth 800
+        arenaHeight 600
+
+        leftX 28
+        leftY 250
+        rightX 756
+        rightY 250
+        paddleWidth 16
+        paddleHeight 100
+        leftSpeed 0
+        rightSpeed 0
+
+        ballX 400
+        ballY 300
+        ballVX 6
+        ballVY 4
+        ballRadius 10
+
+        leftScore 0
+        rightScore 0
+    }
+}
+
+desire LeftUpPressed {
+    remember leftSpeed as -8
+}
+
+desire LeftUpReleased {
+    remember leftSpeed as 0
+}
+
+desire LeftDownPressed {
+    remember leftSpeed as 8
+}
+
+desire LeftDownReleased {
+    remember leftSpeed as 0
+}
+
+desire RightUpPressed {
+    remember rightSpeed as -8
+}
+
+desire RightUpReleased {
+    remember rightSpeed as 0
+}
+
+desire RightDownPressed {
+    remember rightSpeed as 8
+}
+
+desire RightDownReleased {
+    remember rightSpeed as 0
+}
+
+desire ServeLeft {
+    remember ballX as 400
+    remember ballY as 300
+    remember ballVX as -6
+    remember ballVY as 4
+}
+
+desire ServeRight {
+    remember ballX as 400
+    remember ballY as 300
+    remember ballVX as 6
+    remember ballVY as -4
+}
+
+desire NewGame {
+    remember leftY as 250
+    remember rightY as 250
+    remember leftSpeed as 0
+    remember rightSpeed as 0
+    remember leftScore as 0
+    remember rightScore as 0
+    desire ServeRight
+}
+
+desire Tick {
+    attempt numbers.add leftY leftSpeed as nextLeft
+    attempt numbers.clamp nextLeft 0 500 as nextLeft
+    remember leftY as nextLeft
+
+    attempt numbers.add rightY rightSpeed as nextRight
+    attempt numbers.clamp nextRight 0 500 as nextRight
+    remember rightY as nextRight
+
+    attempt motion.advance ballX ballY ballVX ballVY as moved
+    attempt motion.bounce-y moved.x moved.y moved.vx moved.vy ballRadius 0 arenaHeight as moved
+    attempt motion.bounce-rect moved.x moved.y moved.vx moved.vy ballRadius leftX leftY paddleWidth paddleHeight as moved
+    attempt motion.bounce-rect moved.x moved.y moved.vx moved.vy ballRadius rightX rightY paddleWidth paddleHeight as moved
+
+    remember ballX as moved.x
+    remember ballY as moved.y
+    remember ballVX as moved.vx
+    remember ballVY as moved.vy
+
+    attempt numbers.less ballX -10 as missedLeft
+    attempt numbers.greater ballX 810 as missedRight
+
+    when missedLeft {
+        attempt numbers.add rightScore 1 as nextScore
+        remember rightScore as nextScore
+        desire ServeLeft
+    }
+
+    when missedRight {
+        attempt numbers.add leftScore 1 as nextScore
+        remember leftScore as nextScore
+        desire ServeRight
+    }
+}
+
+scene Main {
+    window {
+        title "Mora Pong"
+        size 960 x 760
+        minimum 720 x 580
+
+        header {
+            button "New game" invites NewGame
+        }
+
+        keyboard {
+            key w pressed invites LeftUpPressed
+            key w released invites LeftUpReleased
+            key s pressed invites LeftDownPressed
+            key s released invites LeftDownReleased
+
+            key up pressed invites RightUpPressed
+            key up released invites RightUpReleased
+            key down pressed invites RightDownPressed
+            key down released invites RightDownReleased
+        }
+
+        clock {
+            every 16ms invites Tick
+        }
+
+        canvas Arena {
+            coordinates 800 x 600
+            background "#101014"
+            foreground "#f4f4f5"
+
+            line Centre {
+                x1 400
+                y1 0
+                x2 400
+                y2 600
+                width 3
+                dashed
+            }
+
+            rectangle Left {
+                x leftX
+                y leftY
+                width paddleWidth
+                height paddleHeight
+            }
+
+            rectangle Right {
+                x rightX
+                y rightY
+                width paddleWidth
+                height paddleHeight
+            }
+
+            circle Ball {
+                x ballX
+                y ballY
+                radius ballRadius
+            }
+
+            text LeftScore {
+                value leftScore
+                x 330
+                y 72
+                size 48
+            }
+
+            text RightScore {
+                value rightScore
+                x 438
+                y 72
+                size 48
+            }
+
+            text LeftControls {
+                value "W / S"
+                x 40
+                y 575
+                size 18
+            }
+
+            text RightControls {
+                value "↑ / ↓"
+                x 700
+                y 575
+                size 18
+            }
+        }
+    }
+}
