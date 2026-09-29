@@ -33,6 +33,20 @@ mora run app.mora
 
 ## Architecture
 
+## Emotion-driven play
+
+Mora does not treat emotion as ground truth. The game keeps an uncertain belief about the players' current experience.
+
+- a point ending is weak evidence of uncertainty
+- several points ending within 8 seconds are stronger evidence of frustration
+- a rally continuing over time is weak evidence of confidence and recovery
+- when the `user-struggles` pattern emerges, the `Playing` journey invokes `GentlePace` and slows the ball
+- after confidence dominates uncertainty/frustration for 5 seconds, `NormalPace` restores the normal ball speed
+
+The current adaptive pace is shown on the court as `gentle` or `normal`. The inference and the adaptation are declared in `app.mora`; they are not Pong rules hidden in the Mora runtime.
+
+## Application rules
+
 The game declares its own state and rules in Mora:
 
 - paddle positions and velocities
