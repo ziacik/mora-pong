@@ -26,8 +26,10 @@ jobs:
       - name: Start game headlessly
         run: |
           set +e
-          timeout 5s dbus-run-session -- xvfb-run -a mora run app.mora
+          timeout 5s dbus-run-session -- xvfb-run -a mora run app.mora > /tmp/mora-gtk.log 2>&1
           code=$?
+          cat /tmp/mora-gtk.log
+          if grep -E 'Traceback|TypeError|Mora error' /tmp/mora-gtk.log; then exit 1; fi
           set -e
           if [ "$code" -ne 124 ]; then
             echo "Mora Pong exited unexpectedly with code $code"
