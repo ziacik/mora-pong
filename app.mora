@@ -1,5 +1,50 @@
 language mora 0.4
 
+belief user about emotion {
+    confident 0.55
+    uncertain 0.15
+    frustrated 0.05
+    never certain
+}
+
+meaning point-ended {
+    suggests uncertain faintly
+    weakens confident faintly
+}
+
+meaning repeated point-ended within 8s {
+    suggests frustrated strongly
+    suggests uncertain moderately
+}
+
+meaning rally-continues {
+    suggests confident faintly
+    weakens uncertain faintly
+    weakens frustrated faintly
+}
+
+pattern user-struggles {
+    repeated point-ended within 8s
+}
+
+pattern user-flows {
+    belief user.confident dominates user.uncertain user.frustrated for 5s
+}
+
+journey Playing {
+    toward user.confident
+    away from user.frustrated
+    away from user.uncertain
+
+    when user-struggles {
+        desire GentlePace
+    }
+
+    when user-flows {
+        desire NormalPace
+    }
+}
+
 faculty numbers from arithmetic {
     can add Number Number -> Number
     can clamp Number Number Number -> Number
@@ -37,7 +82,52 @@ app MoraPong {
 
         leftScore 0
         rightScore 0
+        pace "normal"
     }
+}
+
+desire GentlePace {
+    attempt numbers.greater ballVX 0 as movingRight
+    attempt numbers.greater ballVY 0 as movingDown
+
+    when movingRight {
+        remember ballVX as 4
+    }
+    when not movingRight {
+        remember ballVX as -4
+    }
+    when movingDown {
+        remember ballVY as 3
+    }
+    when not movingDown {
+        remember ballVY as -3
+    }
+
+    remember pace as "gentle"
+}
+
+desire NormalPace {
+    attempt numbers.greater ballVX 0 as movingRight
+    attempt numbers.greater ballVY 0 as movingDown
+
+    when movingRight {
+        remember ballVX as 6
+    }
+    when not movingRight {
+        remember ballVX as -6
+    }
+    when movingDown {
+        remember ballVY as 4
+    }
+    when not movingDown {
+        remember ballVY as -4
+    }
+
+    remember pace as "normal"
+}
+
+desire ObserveRally {
+    perceive rally-continues
 }
 
 desire LeftUpPressed {
@@ -93,6 +183,8 @@ desire NewGame {
     remember rightSpeed as 0
     remember leftScore as 0
     remember rightScore as 0
+    remember pace as "normal"
+    perceive rally-continues
     desire ServeRight
 }
 
@@ -121,12 +213,14 @@ desire Tick {
     when missedLeft {
         attempt numbers.add rightScore 1 as nextScore
         remember rightScore as nextScore
+        perceive point-ended
         desire ServeLeft
     }
 
     when missedRight {
         attempt numbers.add leftScore 1 as nextScore
         remember leftScore as nextScore
+        perceive point-ended
         desire ServeRight
     }
 }
@@ -155,6 +249,7 @@ scene Main {
 
         clock {
             every 16ms invites Tick
+            every 1s invites ObserveRally
         }
 
         canvas Arena {
@@ -217,6 +312,13 @@ scene Main {
                 x 700
                 y 575
                 size 18
+            }
+
+            text AdaptivePace {
+                value pace
+                x 350
+                y 575
+                size 16
             }
         }
     }
