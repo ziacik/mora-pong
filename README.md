@@ -1,6 +1,6 @@
 # Mora Pong
 
-A two-player desktop Pong game written entirely in **Mora 0.4.1 runtime**.
+A two-player desktop Pong game written entirely in **Mora 0.4.2 runtime**.
 
 There is no Python, Rust, C, JavaScript, or other host-language implementation in this repository. The application logic is in `app.mora`.
 
