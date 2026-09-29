@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  mora-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject host-language source
+        run: |
+          if find . -type f \( -name '*.py' -o -name '*.rs' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.js' -o -name '*.ts' \) | grep .; then
+            echo "Host-language implementation is not allowed in mora-pong"
+            exit 1
+          fi
+      - name: Install GTK and Mora dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 python3-pil python3-requests python3-opencv xvfb dbus-x11
+          git clone --depth 1 https://github.com/ziacik/mora.git /tmp/mora
+          /usr/bin/python3 -m pip install --break-system-packages --no-deps --no-build-isolation /tmp/mora
+      - name: Check Mora source
+        run: mora check app.mora
+      - name: Start game headlessly
+        run: |
+          set +e
+          timeout 5s dbus-run-session -- xvfb-run -a mora run app.mora
+          code=$?
+          set -e
+          if [ "$code" -ne 124 ]; then
+            echo "Mora Pong exited unexpectedly with code $code"
+            exit "$code"
+          fi
+          echo "Mora Pong stayed alive: OK"
