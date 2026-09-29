@@ -27,6 +27,10 @@ jobs:
           /usr/bin/python3 -m pip install --break-system-packages --no-deps --no-build-isolation /tmp/mora
       - name: Check Mora source
         run: mora check app.mora
+      - name: Check affective inference
+        run: |
+          mora simulate app.mora point-ended point-ended point-ended | tee /tmp/affect.log
+          grep -q "frustrated.*0.25" /tmp/affect.log
       - name: Start game headlessly
         run: |
           set +e
