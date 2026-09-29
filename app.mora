@@ -85,6 +85,7 @@ app MoraPong {
         leftScore 0
         rightScore 0
         pace "normal"
+        gentle false
     }
 }
 
@@ -106,6 +107,7 @@ desire GentlePace {
     }
 
     remember pace as "gentle"
+    remember gentle as true
 }
 
 desire NormalPace {
@@ -126,6 +128,7 @@ desire NormalPace {
     }
 
     remember pace as "normal"
+    remember gentle as false
 }
 
 desire ObserveRally {
@@ -167,15 +170,29 @@ desire RightDownReleased {
 desire ServeLeft {
     remember ballX as 400
     remember ballY as 300
-    remember ballVX as -6
-    remember ballVY as 4
+
+    when gentle {
+        remember ballVX as -4
+        remember ballVY as 3
+    }
+    when not gentle {
+        remember ballVX as -6
+        remember ballVY as 4
+    }
 }
 
 desire ServeRight {
     remember ballX as 400
     remember ballY as 300
-    remember ballVX as 6
-    remember ballVY as -4
+
+    when gentle {
+        remember ballVX as 4
+        remember ballVY as -3
+    }
+    when not gentle {
+        remember ballVX as 6
+        remember ballVY as -4
+    }
 }
 
 desire NewGame {
@@ -215,15 +232,15 @@ desire Tick {
     when missedLeft {
         attempt numbers.add rightScore 1 as nextScore
         remember rightScore as nextScore
-        perceive point-ended
         desire ServeLeft
+        perceive point-ended
     }
 
     when missedRight {
         attempt numbers.add leftScore 1 as nextScore
         remember leftScore as nextScore
-        perceive point-ended
         desire ServeRight
+        perceive point-ended
     }
 }
 
