@@ -12,9 +12,11 @@ There is no Python, Rust, C, JavaScript, or other host-language implementation i
 
 ## Run
 
-On Manjaro/Arch, install Mora first:
+On Manjaro/Arch, install the desktop runtime dependencies and Mora first:
 
 ```bash
+sudo pacman -S python python-gobject python-cairo gtk4 libadwaita
+
 git clone https://github.com/ziacik/mora.git
 cd mora
 sh install.sh
