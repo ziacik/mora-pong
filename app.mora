@@ -202,7 +202,6 @@ desire NewGame {
     remember rightSpeed as 0
     remember leftScore as 0
     remember rightScore as 0
-    remember pace as "normal"
     perceive rally-continues
     desire ServeRight
 }
