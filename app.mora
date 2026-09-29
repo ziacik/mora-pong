@@ -31,20 +31,6 @@ pattern user-flows {
     belief user.confident dominates user.uncertain user.frustrated for 5s
 }
 
-journey Playing {
-    toward user.confident
-    away from user.frustrated
-    away from user.uncertain
-
-    when user-struggles {
-        desire GentlePace
-    }
-
-    when user-flows {
-        desire NormalPace
-    }
-}
-
 faculty numbers from arithmetic {
     can add Number Number -> Number
     can clamp Number Number Number -> Number
@@ -60,6 +46,22 @@ faculty motion from geometry2d {
 
 app MoraPong {
     identity "com.github.ziacik.MoraPong"
+
+    seeks Playing
+
+    journey Playing {
+        toward user.confident
+        away from user.frustrated
+        away from user.uncertain
+
+        when user-struggles {
+            desire GentlePace
+        }
+
+        when user-flows {
+            desire NormalPace
+        }
+    }
 
     remembers {
         arenaWidth 800
